@@ -63,12 +63,16 @@ function computeGradient (img, w, h, gx, gy) {
 	var i,j,k,p,q;
   var glength, phi, phiscaled, ascaled, errsign, pfrac, qfrac, err0, err1, err;
 	var SQRT2 = 1.4142136;
-	for(i = 1; i < h-1; i++) { // Avoid edges where the kernels would spill over
-    for(j = 1; j < w-1; j++) {
-      k = i*w + j;
+
+  // Avoid edges where the kernels would spill over
+  i = h-2;
+  j = w-2;
+	while(i--) { 
+    while(j--) {
+      k = (i+1)*w + (j+1);
       if((img[k]>0.0) && (img[k]<1.0)) { // Compute gradient for edge pixels only
         gx[k] = -img[k-w-1] - SQRT2*img[k-1] - img[k+w-1] + img[k-w+1] + SQRT2*img[k+1] + img[k+w+1];
-        gy[k] = -img[k-w-1] - SQRT2*img[k-w] - img[k+w-1] + img[k-w+1] + SQRT2*img[k+w] + img[k+w+1];
+        gy[k] = -img[k-w-1] - SQRT2*img[k-w] - img[k-w+1] + img[k+w-1] + SQRT2*img[k+w] + img[k+w+1];
         glength = gx[k]*gx[k] + gy[k]*gy[k];
         if(glength > 0.0) { // Avoid division by zero
           glength = Math.sqrt(glength);
@@ -77,9 +81,11 @@ function computeGradient (img, w, h, gx, gy) {
         }
       }
     }
+    j = w-2;
   }
-}
+  // TODO: Compute for the 1 pixel wide image border edge
 
+}
 
 /*
  * A somewhat tricky function to approximate the distance to an edge in a
@@ -90,40 +96,40 @@ function computeGradient (img, w, h, gx, gy) {
  * accuracy at and near edges, and reduces the error even at distant pixels
  * provided that the gradient direction is accurately estimated.
  */
-// double edgedf(double gx, double gy, double a)
-// {
-//     double df, glength, temp, a1;
+function edgedf(gx, gy, a)
+{
+    var df, glength, temp, a1;
 
-//     if ((gx == 0) || (gy == 0)) { // Either A) gu or gv are zero, or B) both
-//         df = 0.5-a;  // Linear approximation is A) correct or B) a fair guess
-//     } else {
-//         glength = sqrt(gx*gx + gy*gy);
-//         if(glength>0) {
-//             gx = gx/glength;
-//             gy = gy/glength;
-//         }
+    if ((gx == 0) || (gy == 0)) { // Either A) gu or gv are zero, or B) both
+        df = 0.5-a;  // Linear approximation is A) correct or B) a fair guess
+    } else {
+        glength = Math.sqrt(gx*gx + gy*gy);
+        if(glength>0) {
+            gx = gx/glength;
+            gy = gy/glength;
+        }
         /* Everything is symmetric wrt sign and transposition,
          * so move to first octant (gx>=0, gy>=0, gx>=gy) to
          * avoid handling all possible edge directions.
          */
-//         gx = fabs(gx);
-//         gy = fabs(gy);
-//         if(gx<gy) {
-//             temp = gx;
-//             gx = gy;
-//             gy = temp;
-//         }
-//         a1 = 0.5*gy/gx;
-//         if (a < a1) { // 0 <= a < a1
-//             df = 0.5*(gx + gy) - sqrt(2.0*gx*gy*a);
-//         } else if (a < (1.0-a1)) { // a1 <= a <= 1-a1
-//             df = (0.5-a)*gx;
-//         } else { // 1-a1 < a <= 1
-//             df = -0.5*(gx + gy) + sqrt(2.0*gx*gy*(1.0-a));
-//         }
-//     }    
-//     return df;
-// }
+        gx = Math.abs(gx);
+        gy = Math.abs(gy);
+        if(gx<gy) {
+            temp = gx;
+            gx = gy;
+            gy = temp;
+        }
+        a1 = 0.5*gy/gx;
+        if (a < a1) { // 0 <= a < a1
+            df = 0.5*(gx + gy) - Math.sqrt(2.0*gx*gy*a);
+        } else if (a < (1.0-a1)) { // a1 <= a <= 1-a1
+            df = (0.5-a)*gx;
+        } else { // 1-a1 < a <= 1
+            df = -0.5*(gx + gy) + Math.sqrt(2.0*gx*gy*(1.0-a));
+        }
+    }    
+    return df;
+}
 
 // function distaa3(img, gximg, gyimg, w, c, xc, yc, xi, yi)
 // {

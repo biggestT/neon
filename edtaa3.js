@@ -44,17 +44,16 @@ function edtaa3 (outImg, img, mRows, nCols) {
 	gY = new Float64Array(img.length);
 
 	computeGradient(img, nCols, mRows, gX, gY);
-	// console.log(gX);
-	// console.log(gY);
-	// var outImg = new Uint8ClampedArray(img.length*4);
-	for (var i = 0; i < img.length; i++) {
+	
+	i = img.length;
+	while(i--) {
 		var dX = Math.abs(gX[i]);
 		var dY =  Math.abs(gY[i]);
 		outImg[i*4] = dX*255;
 		outImg[i*4+1] = dY*255;
 		outImg[i*4+2] = 0;
 		outImg[i*4+3] = Math.max(dY, dX)*200;
-	};
+	}
 	// console.log(outImg);
 	return outImg;
 }

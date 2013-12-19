@@ -3,7 +3,7 @@ function drawText () {
 		var time = new Date();
 		var start = new Date().getTime();
 
-		var txt = 'Yolo';
+		var txt = 'Neon';
 
 		var cnv = document.getElementById('neon-canvas');
 		var ctx = cnv.getContext("2d");
@@ -11,7 +11,7 @@ function drawText () {
 		var w = cnv.width;
 		var h = cnv.height;
 		var size = h;
-		
+
 		ctx.font = 'bold ' + size + 'px "Text Me One"';
 		ctx.textBaseline = 'middle';
 		ctx.fillStyle = '#fff';
@@ -30,10 +30,14 @@ function drawText () {
 		var outImg = ctx.createImageData(tw, th);
 
 		// get normalized alpha values 
-		var alphaData = new Float64Array(imgData.data.length/4);
-		for (var i = 0; i < imgData.data.length/4; i++) {
-			alphaData[i] = imgData.data[i*4+3]/255.0;
-		};
+		var n = imgData.data.length/4;
+		var alphaData = new Float64Array(n);
+
+		// Fastest javascript loop version according to 
+		// https://blogs.oracle.com/greimer/entry/best_way_to_code_a
+		while (n--) {
+			alphaData[n] = imgData.data[n*4+3]/255.0;
+		}
 
 		edtaa3(outImg.data, alphaData, th, tw);
 
