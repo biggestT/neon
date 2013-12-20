@@ -39,7 +39,7 @@ function drawText () {
 			alphaData[n] = imgData.data[n*4+3]/255.0;
 		}
 
-		edtaa3(outImg.data, alphaData, th, tw);
+		createDistImg(outImg.data, alphaData, th, tw);
 
 		ctx.putImageData(outImg, wOffset, 0);
 

@@ -3,5 +3,6 @@
 * 2013-12-17 read about DT and set up WebGl project 4 hrs 37 min
 * 2013-12-18 2d canvas text with web font to image data 2 hrs 15 min
 * 2013-12-19 Started to port the Improved Euclidian Distance Transform algorithm to javascript 5 hrs 14 min
+* 2013-12-20 Got first visible output from the ported distance transform 4 hrs 6 min
 
-### Total time spent: 13 hours and 13 minutes 
+### Total time spent: 17 hours and 19 minutes 

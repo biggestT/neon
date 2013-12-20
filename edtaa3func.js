@@ -59,10 +59,22 @@ The GNU General Public License is available on <http://www.gnu.org/licenses/>.
  * image, it is never used, and it's mostly zero anyway.
  */
 
+
 function computeGradient (img, w, h, gx, gy) {
 	var i,j,k,p,q;
   var glength, phi, phiscaled, ascaled, errsign, pfrac, qfrac, err0, err1, err;
 	var SQRT2 = 1.4142136;
+  var ul, u, ur, l, r, dl, d, dl;
+
+  // set offsets for current width
+  ul = -w-1;
+  u = -w;
+  ur = -w+1;
+  l = -1;
+  r = 1;
+  dr = w+1;
+  d = w;
+  dl = w-1;
 
   // Avoid edges where the kernels would spill over
   i = h-2;
@@ -71,8 +83,8 @@ function computeGradient (img, w, h, gx, gy) {
     while(j--) {
       k = (i+1)*w + (j+1);
       if((img[k]>0.0) && (img[k]<1.0)) { // Compute gradient for edge pixels only
-        gx[k] = -img[k-w-1] - SQRT2*img[k-1] - img[k+w-1] + img[k-w+1] + SQRT2*img[k+1] + img[k+w+1];
-        gy[k] = -img[k-w-1] - SQRT2*img[k-w] - img[k-w+1] + img[k+w-1] + SQRT2*img[k+w] + img[k+w+1];
+        gx[k] = -img[k+ul] - SQRT2*img[k+l] - img[k+dl] + img[k+ur] + SQRT2*img[k+r] + img[k+dr];
+        gy[k] = -img[k+ul] - SQRT2*img[k+u] - img[k+ur] + img[k+dl] + SQRT2*img[k+d] + img[k+dr];
         glength = gx[k]*gx[k] + gy[k]*gy[k];
         if(glength > 0.0) { // Avoid division by zero
           glength = Math.sqrt(glength);
@@ -96,8 +108,7 @@ function computeGradient (img, w, h, gx, gy) {
  * accuracy at and near edges, and reduces the error even at distant pixels
  * provided that the gradient direction is accurately estimated.
  */
-function edgedf(gx, gy, a)
-{
+function edgedf(gx, gy, a) {
     var df, glength, temp, a1;
 
     if ((gx == 0) || (gy == 0)) { // Either A) gu or gv are zero, or B) both
@@ -131,444 +142,229 @@ function edgedf(gx, gy, a)
     return df;
 }
 
-// function distaa3(img, gximg, gyimg, w, c, xc, yc, xi, yi)
-// {
-//   var di, df, dx, dy, gx, gy, a, closest;
+function distaa3(img, gximg, gyimg, w, c, xc, yc, xi, yi) {
+  var di, df, dx, dy, gx, gy, a, closest;
   
-//   closest = c-xc-yc*w; // Index to the edge pixel pointed to from c
-//   a = img[closest];    // Grayscale value at the edge pixel
-//   gx = gximg[closest]; // X gradient component at the edge pixel
-//   gy = gyimg[closest]; // Y gradient component at the edge pixel
+  closest = c-xc-yc*w; // Index to the edge pixel pointed to from c
+  // console.log('c: ' + c, '');
+  a = img[closest];    // Grayscale value at the edge pixel
+  gx = gximg[closest]; // X gradient component at the edge pixel
+  gy = gyimg[closest]; // Y gradient component at the edge pixel
   
-//   if(a > 1.0) a = 1.0;
-//   if(a < 0.0) a = 0.0; // Clip grayscale values outside the range [0,1]
-//   if(a == 0.0) return 1000000.0; // Not an object pixel, return "very far" ("don't know yet")
+  if(a > 1.0) a = 1.0;
+  if(a < 0.0) a = 0.0; // Clip grayscale values outside the range [0,1]
+  if(a == 0.0) return 1000000.0; // Not an object pixel, return "very far" ("don't know yet")
+  // console.log('not 0');
 
-//   dx = xi;
-//   dy = yi;
-//   di = sqrt(dx*dx + dy*dy); // Length of integer vector, like a traditional EDT
-//   if(di==0) { // Use local gradient only at edges
-//       // Estimate based on local gradient only
-//       df = edgedf(gx, gy, a);
-//   } else {
-//       // Estimate gradient based on direction to edge (accurate for large di)
-//       df = edgedf(dx, dy, a);
-//   }
-//   return di + df; // Same metric as edtaa2, except at edges (where di=0)
-// }
+  dx = xi;
+  dy = yi;
+  di = Math.sqrt(dx*dx + dy*dy); // Length of integer vector, like a traditional EDT
+  if(di==0) { // Use local gradient only at edges
+      // Estimate based on local gradient only
+      df = edgedf(gx, gy, a);
+  } else {
+      // Estimate gradient based on direction to edge (accurate for large di)
+      df = edgedf(dx, dy, a);
+  }
+  return di + df; // Same metric as edtaa2, except at edges (where di=0)
+}
 
-// // Shorthand macro: add ubiquitous parameters dist, gx, gy, img and w and call distaa3()
-// #define DISTAA(c,xc,yc,xi,yi) (distaa3(img, gx, gy, w, c, xc, yc, xi, yi))
+function edtaa3(img, gX, gY, w, h, distX, distY, dist) {
+  var x, y, i, c;
+  var oldDist, newDist;
+  var cDistX, cDistY, newDistX, newDistY;
+  var changed;
+  var directions;
+ 
+  var UL, U, UR, L, C, R, DL, D, DR;
+  UL=0; U=1; UR=2; L=3; C=4; R=5; DL=6; D=7; DR=8;
 
-// void edtaa3(double *img, double *gx, double *gy, int w, int h, short *distx, short *disty, double *dist)
-// {
-//   int x, y, i, c;
-//   int offset_u, offset_ur, offset_r, offset_rd,
-//   offset_d, offset_dl, offset_l, offset_lu;
-//   double olddist, newdist;
-//   int cdistx, cdisty, newdistx, newdisty;
-//   int changed;
+  directions = new Array(9);
 
-//   /* Initialize index offsets for the current image width */
-//   offset_u = -w;
-//   offset_ur = -w+1;
-//   offset_r = 1;
-//   offset_rd = w+1;
-//   offset_d = w;
-//   offset_dl = w-1;
-//   offset_l = -1;
-//   offset_lu = -w-1;
+  for (var i = directions.length - 1; i >= 0; i--) {
+    var dir = directions;
+    dir[i] = [];
+    switch(i) {
+      case 0: // up left
+        dir[i].offset = -w-1; dir[i].x = 1; dir[i].y = 1;
+        break;
+      case 1: // up 
+        dir[i].offset = -w; dir[i].x = 0; dir[i].y = 1;
+        break;
+      case 2: // up right
+        dir[i].offset = -w+1; dir[i].x = -1; dir[i].y = 1;
+        break;
+      case 3: // left
+        dir[i].offset = -1; dir[i].x = 1; dir[i].y = 0;
+        break;
+      case 4: // center
+        dir[i].offset = 0; dir[i].x = 1; dir[i].y = 0;
+        break;
+      case 5: // right
+        dir[i].offset = 1; dir[i].x = -1; dir[i].y = 0;
+        break;
+      case 6: // down left
+        dir[i].offset = w-1; dir[i].x = 1; dir[i].y = -1;
+        break;
+      case 7: // down
+        dir[i].offset = w; dir[i].x = 0; dir[i].y = -1;
+        break;
+      case 8: // down right
+        dir[i].offset = w+1; dir[i].x = -1; dir[i].y = -1;
+        break;
+    }
+  };
+  function distaaShort(c,xc,yc,xi,yi) {
+    return distaa3(img, gX, gY, w, c, xc, yc, xi, yi);
+  }
+  function updateDist(i) {
+    distX[i]=newDistX;
+    distY[i]=newDistY;
+    dist[i]=newDist;
+    olddist=newDist;
+    changed = 1;
+  }
+  var numChecked=0;
+  function checkDistance(d) {
+    numChecked++;
+    c = i + directions[d].offset;
+    cDistX = distX[c];
+    cDistY = distY[c];
+    newDistX = cDistX+directions[d].x;
+    newDistY = cDistY+directions[d].y;
+    newDist = distaaShort(c, cDistX, cDistY, newDistX, newDistY);
+    // console.log(newDist);
 
-//   /* Initialize the distance images */
-//   for(i=0; i<w*h; i++) {
-//     distx[i] = 0; // At first, all pixels point to
-//     disty[i] = 0; // themselves as the closest known.
-//     if(img[i] <= 0.0)
-//       {
-//   dist[i]= 1000000.0; // Big value, means "not set yet"
-//       }
-//     else if (img[i]<1.0) {
-//       dist[i] = edgedf(gx[i], gy[i], img[i]); // Gradient-assisted estimate
-//     }
-//     else {
-//       dist[i]= 0.0; // Inside the object
-//     }
-//   }
+    if(newDist < olddist) { updateDist(i); }
+  }
 
-//   /* Perform the transformation */
-//   do
-//     {
-//       changed = 0;
+  /* Initialize the distance images */
+  i = w*h;
+  while(i--) {
+    distX[i] = 0; // At first, all pixels point to
+    distY[i] = 0; // themselves as the closest known.
+    if(img[i] <= 0.0) {
+      dist[i]= 1000000.0; // Big value, means "not set yet"
+    }
+    else if (img[i]<1.0) {
+      dist[i] = edgedf(gX[i], gY[i], img[i]); // Gradient-assisted estimate
+    }
+    else {
+      dist[i]= 0.0; // Inside the object
+    }
+  }
 
-//       /* Scan rows, except first row */
-//       for(y=1; y<h; y++)
-//         {
+  var test = 0;
+  /* Perform the transformation */
+  do {
+    test++;
+    console.log('starting new do loop');
+    changed = 0;
+    /* Scan rows, except first row */
+    for(y=1; y<h; y++) {
+      // console.log('starting scan rows for-loop y='+y);
+      /* move index to leftmost pixel of current row */
+      i = y*w;
 
-//           /* move index to leftmost pixel of current row */
-//           i = y*w;
+      /* scan right, propagate distances from above & left */
+      /* Leftmost pixel is special, has no left neighbors */
+      olddist = dist[i];
 
-//           /* scan right, propagate distances from above & left */
+      // If non-zero distance or not set yet
+      if(olddist > 0) { 
+        checkDistance(U);
+        checkDistance(UR);
+      }
 
-//           /* Leftmost pixel is special, has no left neighbors */
-//           olddist = dist[i];
-//           if(olddist > 0) // If non-zero distance or not set yet
-//             {
-//         c = i + offset_u; // Index of candidate for testing
-//         cdistx = distx[c];
-//         cdisty = disty[c];
-//               newdistx = cdistx;
-//               newdisty = cdisty+1;
-//               newdist = DISTAA(c, cdistx, cdisty, newdistx, newdisty);
-//               if(newdist < olddist)
-//                 {
-//                   distx[i]=newdistx;
-//                   disty[i]=newdisty;
-//       dist[i]=newdist;
-//                   olddist=newdist;
-//                   changed = 1;
-//                 }
+      i++;
+      /* Middle pixels have all neighbors */
+      for(x=1; x<w-1; x++) {
+        i++;
+        // console.log('starting scan middle pixels x='+x +'i=' +i);
+        olddist = dist[i];
 
-//         c = i+offset_ur;
-//         cdistx = distx[c];
-//         cdisty = disty[c];
-//               newdistx = cdistx-1;
-//               newdisty = cdisty+1;
-//               newdist = DISTAA(c, cdistx, cdisty, newdistx, newdisty);
-//               if(newdist < olddist)
-//                 {
-//                   distx[i]=newdistx;
-//                   disty[i]=newdisty;
-//       dist[i]=newdist;
-//                   changed = 1;
-//                 }
-//             }
-//           i++;
+        if(olddist <= 0) continue; // No need to update further
+        
+        checkDistance(L);
+        checkDistance(UL);
+        checkDistance(U);
+        checkDistance(UR);
+      }
 
-//           /* Middle pixels have all neighbors */
-//           for(x=1; x<w-1; x++, i++)
-//             {
-//               olddist = dist[i];
-//               if(olddist <= 0) continue; // No need to update further
+      /* Rightmost pixel of row is special, has no right neighbors */
+      olddist = dist[i];
+      if(olddist > 0) { // If not already zero distance  
+        checkDistance(L);
+        checkDistance(UL);
+        checkDistance(U);
+      }
 
-//         c = i+offset_l;
-//         cdistx = distx[c];
-//         cdisty = disty[c];
-//               newdistx = cdistx+1;
-//               newdisty = cdisty;
-//               newdist = DISTAA(c, cdistx, cdisty, newdistx, newdisty);
-//               if(newdist < olddist)
-//                 {
-//                   distx[i]=newdistx;
-//                   disty[i]=newdisty;
-//       dist[i]=newdist;
-//                   olddist=newdist;
-//                   changed = 1;
-//                 }
+      /* Move index to second rightmost pixel of current row. */
+      /* Rightmost pixel is skipped, it has no right neighbor. */
+      i = y*w + w-2;
 
-//         c = i+offset_lu;
-//         cdistx = distx[c];
-//         cdisty = disty[c];
-//               newdistx = cdistx+1;
-//               newdisty = cdisty+1;
-//               newdist = DISTAA(c, cdistx, cdisty, newdistx, newdisty);
-//               if(newdist < olddist)
-//                 {
-//                   distx[i]=newdistx;
-//                   disty[i]=newdisty;
-//       dist[i]=newdist;
-//                   olddist=newdist;
-//                   changed = 1;
-//                 }
+      /* scan left, propagate distance from right */
+      for(x=w-2; x>=0; x--) {
+        // console.log('starting scan middle pixels x='+x +'i=' +i);
+        i--;
+        olddist = dist[i];
 
-//         c = i+offset_u;
-//         cdistx = distx[c];
-//         cdisty = disty[c];
-//               newdistx = cdistx;
-//               newdisty = cdisty+1;
-//               newdist = DISTAA(c, cdistx, cdisty, newdistx, newdisty);
-//               if(newdist < olddist)
-//                 {
-//                   distx[i]=newdistx;
-//                   disty[i]=newdisty;
-//       dist[i]=newdist;
-//                   olddist=newdist;
-//                   changed = 1;
-//                 }
+        if (olddist <= 0) continue; // Already zero distance
+        checkDistance(R);
+      }
+    }
+    /* Scan rows in reverse order, except last row */
+    for(y=h-2; y>=0; y--) {
+      // console.log('starting scan rows reverse for-loop y=' + y);
+      /* move index to rightmost pixel of current row */
+      i = y*w + w-1;
 
-//         c = i+offset_ur;
-//         cdistx = distx[c];
-//         cdisty = disty[c];
-//               newdistx = cdistx-1;
-//               newdisty = cdisty+1;
-//               newdist = DISTAA(c, cdistx, cdisty, newdistx, newdisty);
-//               if(newdist < olddist)
-//                 {
-//                   distx[i]=newdistx;
-//                   disty[i]=newdisty;
-//       dist[i]=newdist;
-//                   changed = 1;
-//                 }
-//             }
+      /* Scan left, propagate distances from below & right */
 
-//           /* Rightmost pixel of row is special, has no right neighbors */
-//           olddist = dist[i];
-//           if(olddist > 0) // If not already zero distance
-//             {
-//         c = i+offset_l;
-//         cdistx = distx[c];
-//         cdisty = disty[c];
-//               newdistx = cdistx+1;
-//               newdisty = cdisty;
-//               newdist = DISTAA(c, cdistx, cdisty, newdistx, newdisty);
-//               if(newdist < olddist)
-//                 {
-//                   distx[i]=newdistx;
-//                   disty[i]=newdisty;
-//       dist[i]=newdist;
-//                   olddist=newdist;
-//                   changed = 1;
-//                 }
+      /* Rightmost pixel is special, has no right neighbors */
+      olddist = dist[i];
+      if(olddist > 0) { // If not already zero distance
+        checkDistance(D);
+        checkDistance(DL);
+      }
+      i--;
 
-//         c = i+offset_lu;
-//         cdistx = distx[c];
-//         cdisty = disty[c];
-//               newdistx = cdistx+1;
-//               newdisty = cdisty+1;
-//               newdist = DISTAA(c, cdistx, cdisty, newdistx, newdisty);
-//               if(newdist < olddist)
-//                 {
-//                   distx[i]=newdistx;
-//                   disty[i]=newdisty;
-//       dist[i]=newdist;
-//                   olddist=newdist;
-//                   changed = 1;
-//                 }
+      /* Middle pixels have all neighbors */
+      for(x=w-2; x>0; x--) {
+        i--;
+        olddist = dist[i];
+        if(olddist <= 0) continue; // Already zero distance
 
-//         c = i+offset_u;
-//         cdistx = distx[c];
-//         cdisty = disty[c];
-//               newdistx = cdistx;
-//               newdisty = cdisty+1;
-//               newdist = DISTAA(c, cdistx, cdisty, newdistx, newdisty);
-//               if(newdist < olddist)
-//                 {
-//                   distx[i]=newdistx;
-//                   disty[i]=newdisty;
-//       dist[i]=newdist;
-//                   changed = 1;
-//                 }
-//             }
+        checkDistance(R);
+        checkDistance(DR);
+        checkDistance(D);
+        checkDistance(DL);
+      }
 
-//           /* Move index to second rightmost pixel of current row. */
-//           /* Rightmost pixel is skipped, it has no right neighbor. */
-//           i = y*w + w-2;
+      /* Leftmost pixel is special, has no left neighbors */
+      olddist = dist[i];
 
-//           /* scan left, propagate distance from right */
-//           for(x=w-2; x>=0; x--, i--)
-//             {
-//               olddist = dist[i];
-//               if(olddist <= 0) continue; // Already zero distance
+      if(olddist > 0) { // If not already zero distance
+        checkDistance(R);
+        checkDistance(DR);
+        checkDistance(D);
+      }
 
-//         c = i+offset_r;
-//         cdistx = distx[c];
-//         cdisty = disty[c];
-//               newdistx = cdistx-1;
-//               newdisty = cdisty;
-//               newdist = DISTAA(c, cdistx, cdisty, newdistx, newdisty);
-//               if(newdist < olddist)
-//                 {
-//                   distx[i]=newdistx;
-//                   disty[i]=newdisty;
-//       dist[i]=newdist;
-//                   changed = 1;
-//                 }
-//             }
-//         }
-      
-//       /* Scan rows in reverse order, except last row */
-//       for(y=h-2; y>=0; y--)
-//         {
-//           /* move index to rightmost pixel of current row */
-//           i = y*w + w-1;
+      /* Move index to second leftmost pixel of current row. */
+      /* Leftmost pixel is skipped, it has no left neighbor. */
+      i = y*w + 1;
 
-//           /* Scan left, propagate distances from below & right */
-
-//           /* Rightmost pixel is special, has no right neighbors */
-//           olddist = dist[i];
-//           if(olddist > 0) // If not already zero distance
-//             {
-//         c = i+offset_d;
-//         cdistx = distx[c];
-//         cdisty = disty[c];
-//               newdistx = cdistx;
-//               newdisty = cdisty-1;
-//               newdist = DISTAA(c, cdistx, cdisty, newdistx, newdisty);
-//               if(newdist < olddist)
-//                 {
-//                   distx[i]=newdistx;
-//                   disty[i]=newdisty;
-//       dist[i]=newdist;
-//                   olddist=newdist;
-//                   changed = 1;
-//                 }
-
-//         c = i+offset_dl;
-//         cdistx = distx[c];
-//         cdisty = disty[c];
-//               newdistx = cdistx+1;
-//               newdisty = cdisty-1;
-//               newdist = DISTAA(c, cdistx, cdisty, newdistx, newdisty);
-//               if(newdist < olddist)
-//                 {
-//                   distx[i]=newdistx;
-//                   disty[i]=newdisty;
-//       dist[i]=newdist;
-//                   changed = 1;
-//                 }
-//             }
-//           i--;
-
-//           /* Middle pixels have all neighbors */
-//           for(x=w-2; x>0; x--, i--)
-//             {
-//               olddist = dist[i];
-//               if(olddist <= 0) continue; // Already zero distance
-
-//         c = i+offset_r;
-//         cdistx = distx[c];
-//         cdisty = disty[c];
-//               newdistx = cdistx-1;
-//               newdisty = cdisty;
-//               newdist = DISTAA(c, cdistx, cdisty, newdistx, newdisty);
-//               if(newdist < olddist)
-//                 {
-//                   distx[i]=newdistx;
-//                   disty[i]=newdisty;
-//       dist[i]=newdist;
-//                   olddist=newdist;
-//                   changed = 1;
-//                 }
-
-//         c = i+offset_rd;
-//         cdistx = distx[c];
-//         cdisty = disty[c];
-//               newdistx = cdistx-1;
-//               newdisty = cdisty-1;
-//               newdist = DISTAA(c, cdistx, cdisty, newdistx, newdisty);
-//               if(newdist < olddist)
-//                 {
-//                   distx[i]=newdistx;
-//                   disty[i]=newdisty;
-//       dist[i]=newdist;
-//                   olddist=newdist;
-//                   changed = 1;
-//                 }
-
-//         c = i+offset_d;
-//         cdistx = distx[c];
-//         cdisty = disty[c];
-//               newdistx = cdistx;
-//               newdisty = cdisty-1;
-//               newdist = DISTAA(c, cdistx, cdisty, newdistx, newdisty);
-//               if(newdist < olddist)
-//                 {
-//                   distx[i]=newdistx;
-//                   disty[i]=newdisty;
-//                   dist[i]=newdist;
-//                   olddist=newdist;
-//                   changed = 1;
-//                 }
-
-//         c = i+offset_dl;
-//         cdistx = distx[c];
-//         cdisty = disty[c];
-//               newdistx = cdistx+1;
-//               newdisty = cdisty-1;
-//               newdist = DISTAA(c, cdistx, cdisty, newdistx, newdisty);
-//               if(newdist < olddist)
-//                 {
-//                   distx[i]=newdistx;
-//                   disty[i]=newdisty;
-//                   dist[i]=newdist;
-//                   changed = 1;
-//                 }
-//             }
-//           /* Leftmost pixel is special, has no left neighbors */
-//           olddist = dist[i];
-//           if(olddist > 0) // If not already zero distance
-//             {
-//         c = i+offset_r;
-//         cdistx = distx[c];
-//         cdisty = disty[c];
-//               newdistx = cdistx-1;
-//               newdisty = cdisty;
-//               newdist = DISTAA(c, cdistx, cdisty, newdistx, newdisty);
-//               if(newdist < olddist)
-//                 {
-//                   distx[i]=newdistx;
-//                   disty[i]=newdisty;
-//                   dist[i]=newdist;
-//                   olddist=newdist;
-//                   changed = 1;
-//                 }
-
-//         c = i+offset_rd;
-//         cdistx = distx[c];
-//         cdisty = disty[c];
-//               newdistx = cdistx-1;
-//               newdisty = cdisty-1;
-//               newdist = DISTAA(c, cdistx, cdisty, newdistx, newdisty);
-//               if(newdist < olddist)
-//                 {
-//                   distx[i]=newdistx;
-//                   disty[i]=newdisty;
-//       dist[i]=newdist;
-//                   olddist=newdist;
-//                   changed = 1;
-//                 }
-
-//         c = i+offset_d;
-//         cdistx = distx[c];
-//         cdisty = disty[c];
-//               newdistx = cdistx;
-//               newdisty = cdisty-1;
-//               newdist = DISTAA(c, cdistx, cdisty, newdistx, newdisty);
-//               if(newdist < olddist)
-//                 {
-//                   distx[i]=newdistx;
-//                   disty[i]=newdisty;
-//                   dist[i]=newdist;
-//                   changed = 1;
-//                 }
-//             }
-
-//           /* Move index to second leftmost pixel of current row. */
-//           /* Leftmost pixel is skipped, it has no left neighbor. */
-//           i = y*w + 1;
-//           for(x=1; x<w; x++, i++)
-//             {
-//               /* scan right, propagate distance from left */
-//               olddist = dist[i];
-//               if(olddist <= 0) continue; // Already zero distance
-
-//         c = i+offset_l;
-//         cdistx = distx[c];
-//         cdisty = disty[c];
-//               newdistx = cdistx+1;
-//               newdisty = cdisty;
-//               newdist = DISTAA(c, cdistx, cdisty, newdistx, newdisty);
-//               if(newdist < olddist)
-//                 {
-//                   distx[i]=newdistx;
-//                   disty[i]=newdisty;
-//                   dist[i]=newdist;
-//                   changed = 1;
-//                 }
-//             }
-//         }
-//     }
-//   while(changed); // Sweep until no more updates are made
-
-//   /* The transformation is completed. */
-
-// }
+      for(x=1; x<w; x++) {
+        i++;
+        /* scan right, propagate distance from left */
+        olddist = dist[i];
+        if(olddist <= 0) continue; // Already zero distance
+        
+        checkDistance(L);
+      }
+    }
+  }
+  while(changed && test < 10); // Sweep until no more updates are made
+  console.log('check function run: '+numChecked +' number of times in ' + test + ' passes');
+  /* The transformation is completed. */
+}

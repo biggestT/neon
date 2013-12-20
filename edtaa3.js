@@ -35,24 +35,31 @@ The GNU General Public License is available on <http://www.gnu.org/licenses/>.
  	Ported to JavaScript by Tor Nilsson Ohrn in 2013
  */
 
-function edtaa3 (outImg, img, mRows, nCols) {
+function createDistImg (outImg, img, h, w) {
 	var xDist, yDist, gX, gY, i;
+	var offsets = {};
 
 	xDist = new Int16Array(img.length);
 	yDist = new Int16Array(img.length);
 	gX = new Float64Array(img.length);
 	gY = new Float64Array(img.length);
 
-	computeGradient(img, nCols, mRows, gX, gY);
-	
+	distData = new Float64Array(img.length);
+	// initialize offsets for current image width:
+  
+
+	computeGradient(img, w, h, gX, gY);
+	edtaa3(img, gX, gY, w, h, xDist, yDist, distData);
+	console.log(distData);
+
 	i = img.length;
 	while(i--) {
-		var dX = Math.abs(gX[i]);
-		var dY =  Math.abs(gY[i]);
-		outImg[i*4] = dX*255;
-		outImg[i*4+1] = dY*255;
-		outImg[i*4+2] = 0;
-		outImg[i*4+3] = Math.max(dY, dX)*200;
+		// var dX = Math.abs(gX[i]);
+		// var dY =  Math.abs(gY[i]);
+		outImg[i*4] = 255;
+		outImg[i*4+1] = 255;
+		outImg[i*4+2] = 255;
+		outImg[i*4+3] = distData[i]*5;
 	}
 	// console.log(outImg);
 	return outImg;
