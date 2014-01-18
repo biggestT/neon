@@ -4,5 +4,7 @@
 * 2013-12-18 2d canvas text with web font to image data 2 hrs 15 min
 * 2013-12-19 Started to port the Improved Euclidian Distance Transform algorithm to javascript 5 hrs 14 min
 * 2013-12-20 Got first visible output from the ported distance transform 4 hrs 6 min
+* 2014-01-15 refactored into require.js modules 6 hrs 31 min
+* 2014-01-18 removed jquery dependencies in fontdetection 3 hrs 7 min
 
-### Total time spent: 17 hours and 19 minutes 
+### Total time spent: 26 hours and 57 minutes 

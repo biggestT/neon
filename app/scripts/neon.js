@@ -47,7 +47,7 @@ function getShader(gl, id) {
 	return shader;
 }
 
-
+jaja
 var shaderProgram;
 
 function initShaders() {
@@ -80,26 +80,6 @@ function setMatrixUniforms() {
 	gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
 	gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
 }
-
-
-
-// var triangleVertexPositionBuffer;
-// var squareVertexPositionBuffer;
-
-// function initBuffers() {
-
-// 	triangleVertexPositionBuffer = gl.createBuffer();
-// 	gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
-// 	var vertices = [
-// 		 0.0,  1.0,  0.0,
-// 		-1.0, -1.0,  0.0,
-// 		 1.0, -1.0,  0.0
-// 	];
-// 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-// 	triangleVertexPositionBuffer.itemSize = 3;
-// 	triangleVertexPositionBuffer.numItems = 3;
-
-// }
 
 
 function drawScene() {

@@ -4,3 +4,5 @@ glMatrix-2.2.0.min.js
 lib/
 .timestamp
 reference/
+node_modules
+app/bower_components/

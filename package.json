@@ -1,0 +1,33 @@
+{
+  "name": "neon",
+  "version": "0.0.0",
+  "description": "generating custom neon signs with procedural methods implemented in WebGL",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/biggestT/neon.git"
+  },
+  "keywords": [
+    "webGl",
+    "procedural",
+    "neon"
+  ],
+  "author": "Tor Nilsson Öhrn",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/biggestT/neon/issues"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.2",
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-connect": "~0.3.0",
+    "load-grunt-tasks": "~0.2.1",
+    "grunt-open": "~0.2.0",
+    "connect-livereload": "~0.3.1",
+    "grunt-contrib-watch": "~0.5.3"
+  }
+}
