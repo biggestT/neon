@@ -15,13 +15,11 @@ module.exports = function (grunt) {
 
 	// load all grunt tasks
 	require('load-grunt-tasks')(grunt);
-
 	grunt.initConfig({
 		watch: {
 			files: [
-				'<%= src %>/*.html',
-				// '{.tmp,<%= src %>}/styles/{,*/}*.css',
-				'{.tmp,<%= src %>}/scripts/{,*/}*.js'
+				'**/*.js',
+				'**/*.html'
 			],
 			options: {
 				spawn: false,
@@ -40,8 +38,7 @@ module.exports = function (grunt) {
 						console.log('reloading');
 						return [
 							lrSnippet,
-							mountFolder(connect, '.tmp'),
-							mountFolder(connect, src),
+							mountFolder(connect, src)
 						];
 					}
 				}
@@ -53,17 +50,12 @@ module.exports = function (grunt) {
 				// change this to your prefered web browser
 				app: 'google-chrome'
 			}
-		},
-		clean: {
-			dist: ['.tmp', '<%= dist %>/*', '!<%= dist %>/fonts'],
-			server: '.tmp'
 		}
 	});
 
 	grunt.registerTask('server', function (target) {
 		
 		grunt.task.run([
-			'clean:server',
 			'connect:livereload',
 			'open',
 			'watch'

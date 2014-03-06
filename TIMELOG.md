@@ -6,5 +6,6 @@
 * 2013-12-20 Got first visible output from the ported distance transform 4 hrs 6 min
 * 2014-01-15 refactored into require.js modules 6 hrs 31 min
 * 2014-01-18 removed jquery dependencies in fontdetection 3 hrs 7 min
+* 2014-01-18 combined inside and outside distances into one texture to pass to the shaders 2 hrs 58 min
 
-### Total time spent: 26 hours and 57 minutes 
+### Total time spent: 29 hours and 55 minutes 

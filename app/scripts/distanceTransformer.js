@@ -58,6 +58,8 @@ The GNU General Public License is available on <http://www.gnu.org/licenses/>.
  * The gradient is computed only at edge pixels. At other places in the
  * image, it is never used, and it's mostly zero anyway.
  */
+
+// require.js style modularisation
 define(function () {
 
   // Initializ the object to be exported
@@ -67,34 +69,42 @@ define(function () {
 
   // Currently the only public function of the DistanceTransformer object
   // To be called by clients when in need for distance data array of some image data
-  DistanceTransformer.createDistanceImage = function (outImg, img, h, w) {
+  // @param {Float64Array} img
+  // @param {Number} h
+  // @param {Number} w
+  DistanceTransformer.getDistance = function (img, h, w) {
 
-    var xDist, yDist, gX, gY, i;
+    var xDist, yDist, gX, gY, n;
 
-    xDist = new Int16Array(img.length);
-    yDist = new Int16Array(img.length);
-    gX = new Float64Array(img.length);
-    gY = new Float64Array(img.length);
+    n = img.length;
 
-    distData = new Float64Array(img.length);  
+    xDist = new Int16Array(n);
+    yDist = new Int16Array(n);
+    gX = new Float64Array(n);
+    gY = new Float64Array(n);
+
+    distData = new Float64Array(n);  
 
     computeGradient(img, w, h, gX, gY);
     edtaa3(img, gX, gY, w, h, xDist, yDist, distData);
 
-    i = img.length;
-    while(i--) {
-      outImg[i*4] = 255;
-      outImg[i*4+1] = 255;
-      outImg[i*4+2] = 255;
-      // 5 is an arbitrary constant to map distance in pixels to a visible quantity 
-      outImg[i*4+3] = (this.normalize) ? distData[i]/distData.maxDist*255 : distData[i]; 
+    if (this.normalize) {
+      var i = n;
+      while(i--) {
+        distData[i] = distData[i]/distData.maxDist; 
+      }
     }
-    console.log(distData.maxDist);
-    return outImg;
+
+    return distData;
+    
   }
 
   // "Private" functions used by the public function createDistanceImage:
-
+  // @param {Float64Array} img
+  // @param {Number} w
+  // @param {Number} h
+  // @param {Number} gx
+  // @param {Number} gy
   function computeGradient (img, w, h, gx, gy) {
     var i,j,k,p,q;
     var glength, phi, phiscaled, ascaled, errsign, pfrac, qfrac, err0, err1, err;

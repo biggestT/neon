@@ -8,20 +8,32 @@ require.config({
     }
   },
   paths: {
-    glMatrix: '../bower_components/dist/gl-matrix'
+    glMatrix: '../bower_components/gl-matrix/dist/gl-matrix-min'
   },
 });
 
 require([
   'distanceTextDrawer', 
-  'fontDetectNoJquery' // returns single instance of global object 
-], function (DistanceTextDrawer, FontDetect) {
+  'fontDetectNoJquery', // returns single instance of global object 
+  'webGl'
+], function (DistanceTextDrawer, FontDetect, WebGl) {
 
-  var fontName = 'Text Me One';
-  fontdetect.onFontLoaded(fontName, drawText);
+  // var fontName = 'Text Me One';
+  var fontName = 'Audiowide';
+  fontdetect.onFontLoaded(fontName, createDistanceTexture);
 
-  function drawText () {
-    DistanceTextDrawer.drawText('Neo', fontName);
+  var distanceTexture;
+
+  function createDistanceTexture () {
+    distanceTexture = DistanceTextDrawer.drawText('stor', fontName, 'texture-canvas');
+    webGLStart();
   };
 
+  function webGLStart() {
+    var WebGlCanvas = document.getElementById('neon-canvas');
+    WebGl.initGL(WebGlCanvas);
+    WebGl.initShaders();
+  };
+
+  
 });
