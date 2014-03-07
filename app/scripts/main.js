@@ -18,22 +18,18 @@ require([
   'webGl'
 ], function (DistanceTextDrawer, FontDetect, WebGl) {
 
-  // var fontName = 'Text Me One';
-  var fontName = 'Audiowide';
+  var fontName = 'Text Me One';
+  // var fontName = 'Audiowide';
+  
   fontdetect.onFontLoaded(fontName, createDistanceTexture);
 
-  var distanceTexture;
+  var distanceImage;
 
   function createDistanceTexture () {
-    distanceTexture = DistanceTextDrawer.drawText('stor', fontName, 'texture-canvas');
-    webGLStart();
-  };
-
-  function webGLStart() {
+    distanceImage = DistanceTextDrawer.drawText('neon', fontName, 'texture-canvas');
     var WebGlCanvas = document.getElementById('neon-canvas');
-    WebGl.initGL(WebGlCanvas);
-    WebGl.initShaders();
+    WebGl.init(WebGlCanvas);
+    WebGl.initTexture(distanceImage);
   };
-
   
 });

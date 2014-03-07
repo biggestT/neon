@@ -3,29 +3,10 @@
  * Tor Nilsson Öhrn
  * 2014-01-15
 */
+
 /**
  * FontDetect - A simple library to detect if an internal font is present or an external font got loaded.
- * 
- * TO USE: 
- *     Include jQuery. This was developed using jQuery 1.7.
- *     Include this file. If desired, you can load this file after the BODY.
- *     Create a new fontdetect().
- *     After you load the fonts you want to test, call either of these methods:
- *     
- *	       fontDetect = new fontdetect();
- *	       
- *	       // Checks that the font is loaded now.
- *	       isLoaded = fontDetect.isFontLoaded(fontname);
- *     
- *         // Polls for the font getting loaded and calls a callback when it does.
- *	       fontDetect.onFontLoaded(fontname, callback [, {onFail: xxx, msInterval: yyy, msTimeout: zzz}]);
- *     
- *     Note: For externally loaded fonts, you may have to wait for more than a second to get a reliable 
- *     answer. Internal browser fonts can be detected immediately.
- *     
- *         // Determines which font in the font stack is being used for a given element.
- *	       sFontname = fontDetect.whichFont(element);
- *     
+
  * @author		Jennifer Simonds
  * @copyright	2012 Jennifer Simonds
  * @license	MIT License http://opensource.org/licenses/MIT

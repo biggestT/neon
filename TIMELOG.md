@@ -7,5 +7,6 @@
 * 2014-01-15 refactored into require.js modules 6 hrs 31 min
 * 2014-01-18 removed jquery dependencies in fontdetection 3 hrs 7 min
 * 2014-01-18 combined inside and outside distances into one texture to pass to the shaders 2 hrs 58 min
+* 2014-03-07 encapsulated webGl initiation methods 4 hrs 8 min
 
-### Total time spent: 29 hours and 55 minutes 
+### Total time spent: 34 hours and 3 minutes 

@@ -3,19 +3,21 @@ define(['glMatrix'] // Google's webGL utility for fast basic matrix operations
 
 	var webGlObject = {};
 
-  var gl;
+  
 
-  webGlObject.initGL = function (canvas) {
+  webGlObject.init = function (canvas) {
 
     try {
-    	console.log(canvas);
-      gl = canvas.getContext('webgl');
-      gl.viewportWidth = canvas.width;
-      gl.viewportHeight = canvas.height;
+      this._gl = canvas.getContext('webgl');
+      this._gl.viewportWidth = canvas.width;
+      this._gl.viewportHeight = canvas.height;
+
+      this.initShaders();
+
     } catch (e) {
       console.log(e);
     }
-    if (!gl) {
+    if (!this._gl) {
       console.log('Could not initialise WebGL, sorry :-(');
     }
   };
@@ -25,7 +27,8 @@ define(['glMatrix'] // Google's webGL utility for fast basic matrix operations
   	this.pMatrix = GlMatrix.mat4.create();
   };
 
-  webGlObject.getShader = function (gl, shaderURL, shaderType) {
+  // utility function to get construct shader from external file
+  function getShader (gl, shaderURL, shaderType) {
 
   // read content of shaderfile into string
   var request = new XMLHttpRequest();
@@ -40,9 +43,9 @@ define(['glMatrix'] // Google's webGL utility for fast basic matrix operations
   var str = returnValue;
   var shader;
 
-  if (shaderType == 'x-shader/x-fragment') {
+  if (shaderType == 'shader-fs') {
   	shader = gl.createShader(gl.FRAGMENT_SHADER);
-  } else if (shaderType == 'x-shader/x-vertex') {
+  } else if (shaderType == 'shader-vs') {
   	shader = gl.createShader(gl.VERTEX_SHADER);
   } else {
   	return null;
@@ -62,8 +65,9 @@ define(['glMatrix'] // Google's webGL utility for fast basic matrix operations
 var shaderProgram;
 
 webGlObject.initShaders = function() {
-  var fragmentShader = this.getShader(gl, './shaders/fragment.glsl', 'shader-fs');
-  var vertexShader = this.getShader(gl, './shaders/vertex.glsl', 'shader-vs');
+  var gl = this._gl;
+  var fragmentShader = getShader(gl, './shaders/fragment.glsl', 'shader-fs');
+  var vertexShader = getShader(gl, './shaders/vertex.glsl', 'shader-vs');
 
   shaderProgram = gl.createProgram();
   gl.attachShader(shaderProgram, vertexShader);
@@ -83,8 +87,21 @@ webGlObject.initShaders = function() {
   shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, 'uMVMatrix');
 }
 
+// Creates a webGl texture out of an image data array
+// @param {Image} the image data array to use as a texture
 
+webGlObject.initTexture = function (imgData) {
+  
+  var gl = this._gl;
+  var texture = gl.createTexture();
 
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, imgData.width, imgData.height, 0, gl.ALPHA, gl.UNSIGNED_BYTE, imgData.data);
+
+  
+  console.log(imgData);
+
+}
 
 function setMatrixUniforms() {
   gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);

@@ -7,7 +7,7 @@ define(['distanceTransformer'], function (DistanceTransformer) {
 	// @param {String} txt
 	// @param {String} font
 	// @param {String} id
-	// @return {Float64Array} normalized distance to edge
+	// @return {Image} image object to use as texture
 
 	textDrawer.drawText = function (txt, font, id) {
 
@@ -16,7 +16,8 @@ define(['distanceTransformer'], function (DistanceTransformer) {
 		var start = new Date().getTime();
 
 		var margin = 40;
-		// must be power of 2
+
+		// each side should be a power of 2 if the resulting image is to be used as a texture
 		var textHeight = 256;
 		var textFont = 'bold ' + textHeight + 'px ' + font;
 
@@ -71,29 +72,38 @@ define(['distanceTransformer'], function (DistanceTransformer) {
 			alphaInvertedData[n] = 1-alpha;
 		}
 
+		console.log('creating inside distance texture ...')
 		var insideDistance = DistanceTransformer.getDistance(alphaInvertedData, th, tw);
+		console.log('creating outside distance texture ...')
 		var outsideDistance = DistanceTransformer.getDistance(alphaData, th, tw);
 
 		// return a power-of-two sized distance texture with inside and outside distance in separate channels 
-		var distanceImage = ctx.createImageData(tw, th);
-		n = distanceImage.data.length/4;
+		var distanceImageData = ctx.createImageData(tw, th);
+		n = distanceImageData.data.length/4;
 
 		while (n--) {
-			distanceImage.data[n*4] = insideDistance[n]*255.0;
-			distanceImage.data[n*4+1] = outsideDistance[n]*255.0;
-			distanceImage.data[n*4+2] = 0;
-			distanceImage.data[n*4+3] = 255.0;
+			distanceImageData.data[n*4] = insideDistance[n]*255.0;
+			distanceImageData.data[n*4+1] = outsideDistance[n]*255.0;
+			distanceImageData.data[n*4+2] = 0;
+			distanceImageData.data[n*4+3] = 255.0;
 		}
 
 
-		ctx.putImageData(distanceImage, wOffset-margin/2, 0);
+		ctx.putImageData(distanceImageData, wOffset-margin/2, 0);
 		
+		// var distanceImage = new Image();
+		// distanceImage.src = cnv.toDataURL('')
 
 		var duration = new Date().getTime() - start;
 		console.log('creating the distance image took: ' + duration + ' ms');
 
+		// Outputobject creation
+		var outputData = {};
+		outputData.data = insideDistance;
+		outputData.width = w;
+		outputData.height = h;
 
-		return ctx.getImageData(0, 0, w, h);
+		return outputData;
 
 
 	}
