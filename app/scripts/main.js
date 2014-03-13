@@ -30,6 +30,7 @@ require([
     var WebGlCanvas = document.getElementById('neon-canvas');
     WebGl.init(WebGlCanvas);
     WebGl.initTexture(distanceImage);
+    WebGl.drawScene();
   };
   
 });

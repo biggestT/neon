@@ -53,7 +53,7 @@ define(['distanceTransformer'], function (DistanceTransformer) {
 		ctx.fillText(txt, wOffset, h/2);
 		
 		// get the 4 channel pixel values of the region with text in it 
-		var imgData = ctx.getImageData(wOffset-margin/2, 0, tw, th); 
+		var imgData = ctx.getImageData(0, 0, w, h); 
 
 		var n = imgData.data.length/4;
 		
@@ -73,35 +73,38 @@ define(['distanceTransformer'], function (DistanceTransformer) {
 		}
 
 		console.log('creating inside distance texture ...')
-		var insideDistance = DistanceTransformer.getDistance(alphaInvertedData, th, tw);
-		console.log('creating outside distance texture ...')
-		var outsideDistance = DistanceTransformer.getDistance(alphaData, th, tw);
-
-		// return a power-of-two sized distance texture with inside and outside distance in separate channels 
-		var distanceImageData = ctx.createImageData(tw, th);
-		n = distanceImageData.data.length/4;
-
-		while (n--) {
-			distanceImageData.data[n*4] = insideDistance[n]*255.0;
-			distanceImageData.data[n*4+1] = outsideDistance[n]*255.0;
-			distanceImageData.data[n*4+2] = 0;
-			distanceImageData.data[n*4+3] = 255.0;
-		}
-
-
-		ctx.putImageData(distanceImageData, wOffset-margin/2, 0);
-		
-		// var distanceImage = new Image();
-		// distanceImage.src = cnv.toDataURL('')
-
-		var duration = new Date().getTime() - start;
-		console.log('creating the distance image took: ' + duration + ' ms');
+		var insideDistance = DistanceTransformer.getDistance(alphaInvertedData, h, w);
+		// console.log('creating outside distance texture ...')
+		// var outsideDistance = DistanceTransformer.getDistance(alphaData, h, w);
 
 		// Outputobject creation
 		var outputData = {};
 		outputData.data = insideDistance;
 		outputData.width = w;
 		outputData.height = h;
+
+		// DURATION DEBUGGING
+
+		var duration = new Date().getTime() - start;
+		console.log('creating the distance image took: ' + duration + ' ms');
+
+		// VISUAL DEBUGGING
+		
+		// return a power-of-two sized distance texture with inside and outside distance in separate channels 
+		var distanceImageData = ctx.createImageData(w, h);
+		n = distanceImageData.data.length/4;
+
+		while (n--) {
+			distanceImageData.data[n*4] = insideDistance[n];
+			// distanceImageData.data[n*4+1] = outsideDistance[n];
+			distanceImageData.data[n*4+2] = 0;
+			distanceImageData.data[n*4+3] = 255.0;
+		}
+
+
+		ctx.putImageData(distanceImageData, 0, 0);
+
+
 
 		return outputData;
 

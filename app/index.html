@@ -4,12 +4,12 @@
 	<link href='http://fonts.googleapis.com/css?family=Audiowide' rel='stylesheet' type='text/css'>
 </head>
 <body style="background: black; height: 100%">
+<!-- canvas for 3d rendering -->
+<canvas id="neon-canvas" style="border: none; margin: 0 auto; display:block;" width="1024" height="512"></canvas>
 
 <!-- canvas for debug display of 2d distance texture -->
 <canvas id="texture-canvas" style="border: none; margin: 0 auto; display:block;"></canvas>
 
-<!-- canvas for 3d rendering -->
-<canvas id="neon-canvas" style="border: none; margin: 0 auto; display:block;" width="1024" height="256"></canvas>
  <!-- kick things off by including the require.js main file -->
 <script data-main="scripts/main" src="bower_components/requirejs/require.js"></script>
 </body>

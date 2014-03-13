@@ -8,5 +8,7 @@
 * 2014-01-18 removed jquery dependencies in fontdetection 3 hrs 7 min
 * 2014-01-18 combined inside and outside distances into one texture to pass to the shaders 2 hrs 58 min
 * 2014-03-07 encapsulated webGl initiation methods 4 hrs 8 min
+* 2014-03-07 started incorporate distance maps in shaders 4 hrs 4 min
+* 2014-03-12 texture initialization 2 hrs 33 min
 
-### Total time spent: 34 hours and 3 minutes 
+### Total time spent: 40 hours and 40 minutes 

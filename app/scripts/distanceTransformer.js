@@ -88,14 +88,16 @@ define(function () {
     computeGradient(img, w, h, gX, gY);
     edtaa3(img, gX, gY, w, h, xDist, yDist, distData);
 
+    var output = new Uint8Array(n);
+
     if (this.normalize) {
       var i = n;
       while(i--) {
-        distData[i] = distData[i]/distData.maxDist; 
+        output[i] = (distData[i] > 0) ? distData[i]/distData.maxDist*255.0 : 0; 
       }
     }
 
-    return distData;
+    return output;
     
   }
 
@@ -191,7 +193,7 @@ define(function () {
     var di, df, dx, dy, gx, gy, a, closest;
     
     closest = c-xc-yc*w; // Index to the edge pixel pointed to from c
-    // console.log('c: ' + c, '');
+    
     a = img[closest];    // Grayscale value at the edge pixel
     gx = gximg[closest]; // X gradient component at the edge pixel
     gy = gyimg[closest]; // Y gradient component at the edge pixel
@@ -199,7 +201,7 @@ define(function () {
     if(a > 1.0) a = 1.0;
     if(a < 0.0) a = 0.0; // Clip grayscale values outside the range [0,1]
     if(a == 0.0) return 1000000.0; // Not an object pixel, return "very far" ("don't know yet")
-    // console.log('not 0');
+    
 
     dx = xi;
     dy = yi;
