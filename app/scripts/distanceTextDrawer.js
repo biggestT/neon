@@ -75,7 +75,7 @@ define(['distanceTransformer'], function (DistanceTransformer) {
 		console.log('creating inside distance texture ...')
 		var insideDistance = DistanceTransformer.getDistance(alphaInvertedData, h, w);
 		// console.log('creating outside distance texture ...')
-		// var outsideDistance = DistanceTransformer.getDistance(alphaData, h, w);
+		var outsideDistance = DistanceTransformer.getDistance(alphaData, h, w);
 
 		// Outputobject creation
 		var outputData = {};
@@ -96,7 +96,7 @@ define(['distanceTransformer'], function (DistanceTransformer) {
 
 		while (n--) {
 			distanceImageData.data[n*4] = insideDistance[n];
-			// distanceImageData.data[n*4+1] = outsideDistance[n];
+			distanceImageData.data[n*4+1] = outsideDistance[n];
 			distanceImageData.data[n*4+2] = 0;
 			distanceImageData.data[n*4+3] = 255.0;
 		}

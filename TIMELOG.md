@@ -10,5 +10,6 @@
 * 2014-03-07 encapsulated webGl initiation methods 4 hrs 8 min
 * 2014-03-07 started incorporate distance maps in shaders 4 hrs 4 min
 * 2014-03-12 texture initialization 2 hrs 33 min
+* 2014-03-14 started setting up an automatic build system 6 hrs 46 min
 
-### Total time spent: 40 hours and 40 minutes 
+### Total time spent: 47 hours and 26 minutes 

@@ -7,15 +7,26 @@ var mountFolder = function (connect, dir) {
 	return connect.static(require('path').resolve(dir));
 };
 
-// folder names for source code and compiled application
-var src = 'app';
-var dist = 'dist';
 
 module.exports = function (grunt) {
+
+	// the folder that the live-reload server should watch
+	var serverRoot = 'dist'; 
 
 	// load all grunt tasks
 	require('load-grunt-tasks')(grunt);
 	grunt.initConfig({
+
+		// FOLDERS
+		
+		folders: {
+			src: 'app',
+			dist: 'dist'
+		},
+
+		// DEVELOPMENT SERVER SETUP
+		// --------------
+
 		watch: {
 			files: [
 				'**/*.js',
@@ -38,7 +49,7 @@ module.exports = function (grunt) {
 						console.log('reloading');
 						return [
 							lrSnippet,
-							mountFolder(connect, src)
+							mountFolder(connect, serverRoot)
 						];
 					}
 				}
@@ -50,8 +61,63 @@ module.exports = function (grunt) {
 				// change this to your prefered web browser
 				app: 'google-chrome'
 			}
-		}
+		},
+
+		// BUILD SETUP
+		// -----------
+
+		// remove dist folder before making a new build
+		clean: {
+			dist: '<%= folders.dist %>'
+		},
+
+		// copy only neccessary bower scripts over to the dist folder
+		copy: {
+			main: {
+				files: [{
+					expand: true,
+					cwd: './<%= folders.src %>/bower_components/',
+					src: [
+					'requirejs/require.js',
+					'gl-matrix/dist/gl-matrix-min.js'
+					],
+					dest: './<%= folders.dist %>/bower_components/'
+				}]
+			}
+    },
+
+    // setup a requirejs optimizer build
+		requirejs: {
+			compile: {
+				options: {
+					appDir: './<%= folders.src %>',
+					baseUrl: './scripts',
+					dir: './<%= folders.dist %>',
+					modules: [
+					{
+						name: 'main'
+					}
+					],
+					removeCombined: true,
+					keepBuildDir: true,
+					fileExclusionRegExp: /(bower_components)/,
+					paths: {
+						glMatrix: '../bower_components/gl-matrix/dist/gl-matrix-min'
+					}
+				}
+			}
+		},
+		usemin: {
+			html: ['<%= folders.dist %>/{,*/}*.html'],
+			options: {
+				dirs: ['<%= folders.dist %>']
+			}
+		},
 	});
+	
+
+	// TASK SEQUENCE TO RUN WHEN DEVELOPING
+	// --------
 
 	grunt.registerTask('server', function (target) {
 		
@@ -62,5 +128,19 @@ module.exports = function (grunt) {
 		]);
 			
 	});
+
+	// TASK SEQUENCE TO RUN FOR BUILDING APP
+	// -----------------
+
+	grunt.registerTask('build', function (target) {
+		
+		grunt.task.run([
+			'clean:dist',
+			'copy',
+			'requirejs'
+		]);
+			
+	});
+
 };
 	

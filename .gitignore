@@ -6,3 +6,5 @@ lib/
 reference/
 node_modules
 app/bower_components/
+dist/
+deploy-to-dropbox.sh

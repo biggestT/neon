@@ -118,10 +118,10 @@ webGlObject.initBuffers = function () {
   
   // array of vertices for the plane
   var vertices = [
-    1.0,  1.0,  0.0,
-    -1.0, 1.0,  0.0,
-    1.0,  -1.0, 0.0,
-    -1.0, -1.0, 0.0
+    1.0,  0.3,  0.0,
+    -1.0, 0.3,  0.0,
+    1.0,  -0.3, 0.0,
+    -1.0, -0.3, 0.0
   ];
   
   planeVerticesBuffer = gl.createBuffer();
@@ -162,7 +162,7 @@ webGlObject.drawScene = function() {
   mat4.identity(mvMatrix);
 
 
-  mat4.translate(mvMatrix, mvMatrix, [0.0, 0.0, -2.0]);
+  mat4.translate(mvMatrix, mvMatrix, [0.0, 0.0, -0.8]);
   mat4.rotateY(mvMatrix, mvMatrix, this._currentAngle);
 
   setMatrixUniforms();

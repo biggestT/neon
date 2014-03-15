@@ -1,0 +1,22 @@
+{
+  "name": "neon",
+  "version": "0.0.0",
+  "homepage": "https://github.com/biggestT/neon",
+  "authors": [
+    "Tor Nilsson Ohrn <tornilssonohrn@gmail.com>"
+  ],
+  "description": "procedural neon signs using webGL",
+  "main": "dist/index.html",
+  "moduleType": [
+    "node"
+  ],
+  "keywords": [
+    "neon",
+    "procedural"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "gl-matrix": "~2.2.0",
+    "requirejs": "~2.1.9"
+  }
+}

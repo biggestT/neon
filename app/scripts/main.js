@@ -2,14 +2,9 @@
 'use strict';
 
 require.config({
-  shim: {
-    glMatrix: {
-      exports: 'glMatrix'
-    }
-  },
   paths: {
     glMatrix: '../bower_components/gl-matrix/dist/gl-matrix-min'
-  },
+  }
 });
 
 require([
@@ -18,7 +13,7 @@ require([
   'webGl'
 ], function (DistanceTextDrawer, FontDetect, WebGl) {
 
-  var fontName = 'Text Me One';
+   var fontName = 'Text Me One';
   // var fontName = 'Audiowide';
   
   fontdetect.onFontLoaded(fontName, createDistanceTexture);
