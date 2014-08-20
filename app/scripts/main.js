@@ -18,14 +18,14 @@ require([
   
   fontdetect.onFontLoaded(fontName, createDistanceTexture);
 
-  var distanceImage;
+  var distanceCanvas;
 
   function createDistanceTexture () {
     var textToDraw = window.location.hash.substr(1) || 'neon';
-    distanceImage = DistanceTextDrawer.drawText(textToDraw, fontName, 'texture-canvas');
+    distanceCanvas = DistanceTextDrawer.drawText(textToDraw, fontName, 'texture-canvas');
     var WebGlCanvas = document.getElementById('neon-canvas');
     WebGl.init(WebGlCanvas);
-    WebGl.initTexture(distanceImage);
+    WebGl.initTexture(distanceCanvas);
     WebGl.drawScene();
     document.getElementById('loading-text').style.visibility = 'hidden';
   };

@@ -56,6 +56,8 @@ define(['glMatrix'] // Google's webGL utility for fast basic matrix operations
 
   gl.shaderSource(shader, str);
   gl.compileShader(shader);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
   if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
     alert(gl.getShaderInfoLog(shader));
@@ -98,15 +100,15 @@ webGlObject.initShaders = function() {
 
 }
 
-// Creates a webGl texture out of an image data array
+// Creates a webGl texture out of an image data arrayp
 // @param {Image} the image data array to use as a texture
 
-webGlObject.initTexture = function (imgData) {
+webGlObject.initTexture = function (canvas) {
   
   texture = gl.createTexture();
-  console.log(imgData);
+  // console.log(imgData);
   gl.bindTexture(gl.TEXTURE_2D, texture);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, imgData.width, imgData.height, 0, gl.ALPHA, gl.UNSIGNED_BYTE, imgData.data);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, canvas);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   gl.generateMipmap(gl.TEXTURE_2D);
@@ -164,7 +166,7 @@ webGlObject.drawScene = function() {
   mat4.identity(mvMatrix);
 
 
-  mat4.translate(mvMatrix, mvMatrix, [0.0, 0.0, -0.7]);
+  mat4.translate(mvMatrix, mvMatrix, [0.0, 0.2, -1.0]);
   mat4.rotateY(mvMatrix, mvMatrix, this._currentAngle);
 
   setMatrixUniforms();

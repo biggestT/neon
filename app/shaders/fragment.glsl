@@ -131,19 +131,29 @@ void main(void)
 
 {
 
+	// don't trust the power supply!
+  float lights_out = step(1.0, time); // make the light go black every now and then
+
+  // it isn't even stable!
 	float cresult = cnoise(vTexCoord);
 	float presult = pnoise(vTexCoord.xy, vec2(0.2, 0.2));
-  float dist = 1.0-texture2D(uSampler, vTexCoord).a-cresult*random*0.1;
 
+	vec3 d_maps = texture2D(uSampler, vTexCoord).rgb; // two incoming distance maps
+
+  float d_border_in = (d_maps.r)-presult*random*0.1*lights_out; // distance to edges from inside the text
+  float d_border_out = (d_maps.g)-presult*random*0.1; // distance to edges from outside of text
   
-  vec3 c1 = vec3(1.0, 1.0, 1.0); // white in the center of the tube
-  vec3 c2 = vec3(1.0, 0.0, 0.0); // pinkred in the colored areas
+  vec3 base_color = vec3(1.0, 0.0, 0.23); // this color can be changed for different signs
+  vec4 shade_color = vec4(base_color, 0.3);
 
-  float c1t = smoothstep(0.8, 0.5, dist);
-  float c2t = smoothstep(0.5, 0.8, dist);
-  vec3 ambient = (c1*c1t+c2t*c2)*(1.0-dist)*3.0;
+  // float c1t = 1.0-smoothstep(0.1, 0.6, d_border_in); 
+  float tube_edge = 1.0-smoothstep(0.4, 0.7, d_border_in);
+  float tube_center = smoothstep(0.4, 0.7, d_border_in);
 
-  float lights_out = step(1.0, time); // make the light go black every now and then
-  
-  gl_FragColor = vec4(ambient*lights_out, dist);
+  vec4 ambient = vec4(vec3(1.0,1.0,1.0)*tube_center+base_color*lights_out*tube_edge, tube_center*2.0);
+
+  vec4 diffuse = shade_color*(1.0-d_border_out)*0.5;
+
+
+  gl_FragColor = ambient;
 }

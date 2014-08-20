@@ -114,7 +114,7 @@ define(['distanceTransformer'], function (DistanceTransformer) {
 
 
 
-		return outputData;
+		return cnv;
 
 
 	}
