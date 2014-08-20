@@ -4,7 +4,7 @@ define(['glMatrix'] // Google's webGL utility for fast basic matrix operations
   var webGlObject = {};
 	var mat4 = GlMatrix.mat4;
   var shaderProgram, gl, mvMatrix, pMatrix, texture;
-  var animated = false;
+  var animated = true;
 
   webGlObject.init = function (canvas) {
 
@@ -12,7 +12,7 @@ define(['glMatrix'] // Google's webGL utility for fast basic matrix operations
       gl = canvas.getContext('webgl');
       gl.viewportWidth = canvas.width;
       gl.viewportHeight = canvas.height;
-
+      console.log(gl);
       this._currentAngle = 0;
 
       mvMatrix = mat4.create();
@@ -93,6 +93,8 @@ webGlObject.initShaders = function() {
   shaderProgram.uSamplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
   shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, 'uPMatrix');
   shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, 'uMVMatrix');
+  shaderProgram.timeUniform = gl.getUniformLocation(shaderProgram, 'time');
+  shaderProgram.randomUniform = gl.getUniformLocation(shaderProgram, 'random');
 
 }
 
@@ -155,14 +157,14 @@ webGlObject.drawScene = function() {
 
 
   gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-  gl.clearColor(1.0, 1.0, 1.0, 1.0);
+  gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   mat4.perspective(pMatrix, 45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
   mat4.identity(mvMatrix);
 
 
-  mat4.translate(mvMatrix, mvMatrix, [0.0, 0.0, -0.8]);
+  mat4.translate(mvMatrix, mvMatrix, [0.0, 0.0, -0.7]);
   mat4.rotateY(mvMatrix, mvMatrix, this._currentAngle);
 
   setMatrixUniforms();
@@ -180,6 +182,8 @@ webGlObject.drawScene = function() {
   gl.bindTexture(gl.TEXTURE_2D, texture);
   gl.uniform1i(shaderProgram.uSamplerUniform, 0);
   
+  gl.uniform1f(shaderProgram.timeUniform, new Date().getSeconds()%4);
+  gl.uniform1f(shaderProgram.randomUniform, Math.random());
 
   // Draw the cube
   gl.bindBuffer(gl.ARRAY_BUFFER, planeVerticesBuffer);
@@ -188,10 +192,10 @@ webGlObject.drawScene = function() {
   if (animated) { requestAnimationFrame(this.drawScene.bind(this)); }
   
   // increase rotation angle but keep it within 2PI
-  this._currentAngle += Math.PI/100;
-  if (this._currentAngle > 2*Math.PI) {
-    this._currentAngle -= 2*Math.PI;
-  }
+  // this._currentAngle += Math.PI/100;
+  // if (this._currentAngle > 2*Math.PI) {
+  //   this._currentAngle -= 2*Math.PI;
+  // }
 };
 
 return webGlObject;

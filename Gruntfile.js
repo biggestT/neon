@@ -11,7 +11,7 @@ var mountFolder = function (connect, dir) {
 module.exports = function (grunt) {
 
 	// the folder that the live-reload server should watch
-	var serverRoot = 'dist'; 
+	var serverRoot = 'app'; 
 
 	// load all grunt tasks
 	require('load-grunt-tasks')(grunt);

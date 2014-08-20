@@ -1,5 +1,5 @@
 /** 
- * Modified FontDetect without jquery dependency 
+ * Modified FontDetect to work without jquery dependency 
  * Tor Nilsson Öhrn
  * 2014-01-15
 */

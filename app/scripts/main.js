@@ -14,18 +14,20 @@ require([
 ], function (DistanceTextDrawer, FontDetect, WebGl) {
 
    var fontName = 'Text Me One';
-  // var fontName = 'Audiowide';
+  var fontName = 'Audiowide';
   
   fontdetect.onFontLoaded(fontName, createDistanceTexture);
 
   var distanceImage;
 
   function createDistanceTexture () {
-    distanceImage = DistanceTextDrawer.drawText('neon', fontName, 'texture-canvas');
+    var textToDraw = window.location.hash.substr(1) || 'neon';
+    distanceImage = DistanceTextDrawer.drawText(textToDraw, fontName, 'texture-canvas');
     var WebGlCanvas = document.getElementById('neon-canvas');
     WebGl.init(WebGlCanvas);
     WebGl.initTexture(distanceImage);
     WebGl.drawScene();
+    document.getElementById('loading-text').style.visibility = 'hidden';
   };
   
 });

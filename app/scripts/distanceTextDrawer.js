@@ -77,9 +77,17 @@ define(['distanceTransformer'], function (DistanceTransformer) {
 		// console.log('creating outside distance texture ...')
 		var outsideDistance = DistanceTransformer.getDistance(alphaData, h, w);
 
-		// Outputobject creation
+		// sum up the two arrays 
 		var outputData = {};
 		outputData.data = insideDistance;
+		outputData.data2 = outsideDistance;
+		// n = insideDistance.length;
+		// while (n--) {
+		// 	outputData.data[n] -= outsideDistance[n];
+		// }
+		// console.log(outputData.data);
+		// Outputobject creation
+		// outputData.data = insideDistance;
 		outputData.width = w;
 		outputData.height = h;
 
