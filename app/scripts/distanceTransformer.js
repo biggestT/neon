@@ -229,6 +229,7 @@ define(function () {
     var passes = 0;
     var numChecked = 0;
 
+    // directions
     var UL, U, UR, L, C, R, DL, D, DR;
     UL=0; U=1; UR=2; L=3; C=4; R=5; DL=6; D=7; DR=8;
 

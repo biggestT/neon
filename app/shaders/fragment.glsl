@@ -118,8 +118,8 @@ float pnoise(vec2 P, vec2 rep)
 float rand(vec2 co){
     return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }
-// neon code begins ...
 
+// Tor's code begins ...
 
 uniform sampler2D uSampler;
 uniform float time;
@@ -135,25 +135,18 @@ void main(void)
   float lights_out = step(1.0, time); // make the light go black every now and then
 
   // it isn't even stable!
-	float cresult = cnoise(vTexCoord);
-	float presult = pnoise(vTexCoord.xy, vec2(0.2, 0.2));
+	float presult = pnoise(vTexCoord.xy, vec2(0.1, 0.2));
+  float flickering = presult*random*0.1*lights_out;
 
-	vec3 d_maps = texture2D(uSampler, vTexCoord).rgb; // two incoming distance maps
-
-  float d_border_in = (d_maps.r)-presult*random*0.1*lights_out; // distance to edges from inside the text
-  float d_border_out = (d_maps.g)-presult*random*0.1; // distance to edges from outside of text
+  float d_border_in =  texture2D(uSampler, vTexCoord).a-flickering; // distance to edges from inside the text
   
   vec3 base_color = vec3(1.0, 0.0, 0.23); // this color can be changed for different signs
-  vec4 shade_color = vec4(base_color, 0.3);
 
-  // float c1t = 1.0-smoothstep(0.1, 0.6, d_border_in); 
-  float tube_edge = 1.0-smoothstep(0.4, 0.7, d_border_in);
-  float tube_center = smoothstep(0.4, 0.7, d_border_in);
+  // interpolate between center and edges of the tube
+  float tube_edge = 1.0-smoothstep(0.35, 0.6, d_border_in);
+  float tube_center = smoothstep(0.35, 0.6, d_border_in);
 
   vec4 ambient = vec4(vec3(1.0,1.0,1.0)*tube_center+base_color*lights_out*tube_edge, tube_center*2.0);
-
-  vec4 diffuse = shade_color*(1.0-d_border_out)*0.5;
-
-
+  
   gl_FragColor = ambient;
 }

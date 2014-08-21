@@ -60,7 +60,6 @@ define(['distanceTransformer'], function (DistanceTransformer) {
 		// initialize the output image object
 		// get normalized alpha values 
 		var n = imgData.data.length/4;
-		var alphaData = new Float64Array(n);
 		var alphaInvertedData = new Float64Array(n);
 
 		// Fastest javascript loop version according to 
@@ -68,30 +67,17 @@ define(['distanceTransformer'], function (DistanceTransformer) {
 		var x = 1.0/255.0; // just to avoid division in loop
 		while (n--) {
 			var alpha = imgData.data[n*4+3]*x;
-			alphaData[n] = alpha;
 			alphaInvertedData[n] = 1-alpha;
 		}
 
 		console.log('creating inside distance texture ...')
 		var insideDistance = DistanceTransformer.getDistance(alphaInvertedData, h, w);
-		// console.log('creating outside distance texture ...')
-		var outsideDistance = DistanceTransformer.getDistance(alphaData, h, w);
 
-		// sum up the two arrays 
+		// format the output into ImageData format 
 		var outputData = {};
-		outputData.data = insideDistance;
-		outputData.data2 = outsideDistance;
-		// n = insideDistance.length;
-		// while (n--) {
-		// 	outputData.data[n] -= outsideDistance[n];
-		// }
-		// console.log(outputData.data);
-		// Outputobject creation
-		// outputData.data = insideDistance;
-		outputData.width = w;
 		outputData.height = h;
-
-		// DURATION DEBUGGING
+		outputData.width = w;
+		outputData.data = insideDistance;
 
 		var duration = new Date().getTime() - start;
 		console.log('creating the distance image took: ' + duration + ' ms');
@@ -104,17 +90,16 @@ define(['distanceTransformer'], function (DistanceTransformer) {
 
 		while (n--) {
 			distanceImageData.data[n*4] = insideDistance[n];
-			distanceImageData.data[n*4+1] = outsideDistance[n];
+			distanceImageData.data[n*4+1] = 0;
 			distanceImageData.data[n*4+2] = 0;
 			distanceImageData.data[n*4+3] = 255.0;
 		}
 
-
 		ctx.putImageData(distanceImageData, 0, 0);
 
 
-
-		return cnv;
+		// return the ImageData output 
+		return outputData;
 
 
 	}
